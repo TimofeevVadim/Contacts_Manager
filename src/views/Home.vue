@@ -68,11 +68,13 @@ export default {
     uuids: [],
     users: [],
     currentStorage: '',
-    currentUser: {}
+    currentUser: {},
+    host: ''
   }),
   components: {
   },
   mounted() {
+    this.host = localStorage.getItem('host')
     if (localStorage.getItem('contactStorages')) {
       this.contactStorages = JSON.parse(localStorage.getItem('contactStorages'))
       this.getContacts()
@@ -89,7 +91,7 @@ export default {
         const token = localStorage.getItem('token')
       console.log(token)
         axios({
-          url: 'https://aurora.afterlogic.com/?/Api/',
+          url: this.host,
           method: 'POST',
           async: true,
           dataType: 'json',
@@ -126,7 +128,7 @@ export default {
       )
       const token = localStorage.getItem('token')
       axios({
-        url: 'https://aurora.afterlogic.com/?/Api/',
+        url: this.host,
         method: 'POST',
         async: true,
         dataType: 'json',
@@ -158,7 +160,7 @@ export default {
       )
 
       axios({
-        url: 'https://aurora.afterlogic.com/?/Api/',
+        url: this.host,
         method: 'POST',
         async: true,
         dataType: 'json',

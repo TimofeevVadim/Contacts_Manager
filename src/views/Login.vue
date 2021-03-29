@@ -86,7 +86,7 @@ export default {
             'Parameters', `{"Login":"${this.email}","Password":"${this.password}","Pattern":""}`
         )
         axios({
-          url: this.urlApi,
+          url: this.urlApi + '/?/Api/',
           method: 'POST',
           async: true,
           dataType: 'json',
@@ -96,6 +96,7 @@ export default {
           }
         })
             .then((res) => {
+              localStorage.setItem('host', this.urlApi + '/?/Api/ ')
               localStorage.setItem('token', res.data.Result['AuthToken'])
               this.$router.push('/home')
             })
