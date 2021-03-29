@@ -3,7 +3,7 @@
     <div class="head d_flex">
       <h1 class="head__h1">Contacts manager</h1>
       <div class="icons d_flex">
-        <svg @click="getContacts" class="iconSvg" id="updateContacts" width="16" height="16" viewBox="0 0 16 16"
+        <svg @click="update" class="iconSvg" id="updateContacts" width="16" height="16" viewBox="0 0 16 16"
              fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
               d="M13.645 2.35C12.195 0.9 10.205 0 7.995 0C3.575 0 0.00500488 3.58 0.00500488 8C0.00500488 12.42 3.575 16 7.995 16C11.725 16 14.835 13.45 15.725 10H13.645C12.825 12.33 10.605 14 7.995 14C4.685 14 1.995 11.31 1.995 8C1.995 4.69 4.685 2 7.995 2C9.655 2 11.135 2.69 12.215 3.78L8.995 7H15.995V0L13.645 2.35Z"
@@ -74,7 +74,7 @@ export default {
   data: () => ({
     contactStorages: [],
     uuids: {},
-    users: [],
+    users: {},
     currentStorage: '',
     currentUser: {},
     host: ''
@@ -91,14 +91,20 @@ export default {
   },
   methods: {
     update() {
-
+      const token = localStorage.getItem('token')
+      this.host = localStorage.getItem('host')
+      localStorage.clear()
+      localStorage.setItem('token', token)
+      localStorage.setItem('host', this.host)
+      this.contactStorages = []
+      this.users = {}
+      this.getContacts()
     },
     getContacts() {
       let bodyFormData = new FormData();
       bodyFormData.append('Module', 'Contacts');
       bodyFormData.append('Method', 'GetContactStorages');
       const token = localStorage.getItem('token')
-      console.log(token)
       axios({
         url: this.host,
         method: 'POST',
@@ -112,6 +118,7 @@ export default {
       })
           .then(res => {
                 if (JSON.stringify(this.contactStorages) !== JSON.stringify(res.data.Result)) {
+
                   this.contactStorages = res.data.Result
                   const contactStorages = JSON.stringify(res.data.Result)
                   localStorage.setItem('contactStorages', contactStorages)
@@ -125,16 +132,15 @@ export default {
                     uuids = JSON.parse(localStorage.getItem('uuids'))
                   }
                   const uuidsKeys = Object.keys(uuids)
+
                   for (let i = 0; i < uuidsKeys.length; i++) {
-                    console.log(uuidsKeys[i])
                     this.getContactsInfo(uuidsKeys[i])
                   }
                 }
               }
           )
     },
-    async getContactsInfo(storage) {
-
+     getContactsInfo(storage) {
       const storageArr = localStorage.getItem(`${storage}Arr`)
       if (storageArr !== 'undefined' && storageArr !== null) {
         this.users = JSON.parse(storageArr)
@@ -164,45 +170,39 @@ export default {
           .then(res => {
                 const requestUuids = []
                 const contactsInfo = res.data.Result.Info
-                this.uuids = JSON.parse(localStorage.getItem('uuids'))
-
-                console.log(this.uuids[storage], storage)
+                const uuids = JSON.parse(localStorage.getItem('uuids'))
                 if (localStorage.getItem(storage) !== String(res.data.Result.CTag) || !storageArr) {
                   let uuid = ''
                   for (let i = 0; i < contactsInfo.length; i++) {
                     uuid = contactsInfo[i].UUID
                     requestUuids.push(`"${uuid}"`)
-                    this.uuids[storage][uuid] = contactsInfo[i].ETag
+                    uuids[storage][uuid] = contactsInfo[i].ETag
                   }
                   localStorage.setItem(storage, res.data.Result.CTag)
-                  console.log('kakogo hya')
                 } else {
-                  console.log('set storage')
                   localStorage.setItem(storage, res.data.Result.CTag)
                   let uuid = ''
                   for (let i = 0; i < contactsInfo.length; i++) {
                     uuid = contactsInfo[i].UUID
-                    console.log(this.uuids[storage][uuid], ' uid')
-                    console.log(contactsInfo[i].ETag, ' etag')
-                    if (this.uuids[storage][uuid] !== contactsInfo[i].ETag) {
+                    if (uuids[storage][uuid] !== contactsInfo[i].ETag) {
                       requestUuids.push(`"${uuid}"`)
-                      this.uuids[storage][uuid] = contactsInfo[i].ETag
+                      uuids[storage][uuid] = contactsInfo[i].ETag
                     }
                   }
                 }
-                localStorage.setItem('uuids', JSON.stringify(this.uuids))
+                localStorage.setItem('uuids', JSON.stringify(uuids))
                 if (requestUuids.length > 0) {
-                  this.GetContactsByUids(token, requestUuids)
+                  this.GetContactsByUids(token, requestUuids, storage)
                 }
               }
           )
     },
-    GetContactsByUids(token, uuids) {
+    GetContactsByUids(token, uuids, currentStorage) {
       let bodyFormData = new FormData();
       bodyFormData.append('Module', 'Contacts');
       bodyFormData.append('Method', 'GetContactsByUids');
       bodyFormData.append(
-          'Parameters', `{"Storage":"${this.currentStorage}","Uids":[${uuids}]}`
+          'Parameters', `{"Storage":"${currentStorage}","Uids":[${uuids}]}`
       )
 
       axios({
@@ -217,7 +217,7 @@ export default {
         }
       })
           .then(res => {
-            let usersLocalStorage = localStorage.getItem(`${this.currentStorage}Arr`)
+            let usersLocalStorage = localStorage.getItem(`${currentStorage}Arr`)
 
             if (usersLocalStorage !== null) {
               usersLocalStorage = JSON.parse(usersLocalStorage)
@@ -238,7 +238,7 @@ export default {
             {
               this.users = res.data.Result
             }
-            localStorage.setItem(`${this.currentStorage}Arr`, JSON.stringify(this.users))
+            localStorage.setItem(`${currentStorage}Arr`, JSON.stringify(this.users))
           })
     },
     getContactInfo(user) {
