@@ -26,19 +26,19 @@
       </div>
       <div class="contacts frame-border d_flex d-f_column">
         <div class="contact" v-for="user in users" :key="user.id" @click="getContactInfo(user)">
-          <h2 class="contact__userName">{{ user.FullName ? user.FullName : user.IdUser }}</h2>
-          <p class="contact__mail">{{ user.ViewEmail }}</p>
+          <h2 class="contact__userName">{{ user.FullName ? user.FullName : 'No name' }}</h2>
+          <p class="contact__mail">{{ user.ViewEmail ? user.ViewEmail : 'No email address' }}</p>
         </div>
       </div>
       <div class="contact-info frame-border">
         <div class="contact-info__row d_flex">
           <h2 class="row__title">Name</h2>
-          <p class="row__value">{{ currentUser.FullName ? currentUser.FullName : currentUser.IdUser }}</p>
+          <p class="row__value">{{ currentUser.FullName ? currentUser.FullName : 'No name' }}</p>
 
         </div>
         <div class="contact-info__row d_flex">
           <h2 class="row__title">Email</h2>
-          <p class="row__value">{{ currentUser.ViewEmail }}</p>
+          <p class="row__value">{{ currentUser.ViewEmail ? currentUser.ViewEmail : 'No email address'}}</p>
 
         </div>
         <div class="contact-info__row d_flex">
@@ -233,6 +233,7 @@ export default {
                   }
                 }
                 localStorage.setItem('uuids', JSON.stringify(uuids))
+            console.log(requestUuids)
                 if (requestUuids.length > 0) {
                   this.GetContactsByUids(token, requestUuids, storage)
                 }
@@ -240,6 +241,7 @@ export default {
           )
     },
     GetContactsByUids(token, uuids, currentStorage) {
+      console.log(uuids, 'uuids')
       let bodyFormData = new FormData();
       bodyFormData.append('Module', 'Contacts');
       bodyFormData.append('Method', 'GetContactsByUids');
@@ -276,8 +278,7 @@ export default {
                 }
               }
               this.users = usersLocalStorage.concat(usersRes)
-            }
-            {
+            } else  {
               this.users = res.data.Result
             }
             localStorage.setItem(`${currentStorage}Arr`, JSON.stringify(this.users))
