@@ -126,15 +126,17 @@ export default {
       })
       .then( res => {
         if (storages !== JSON.stringify(res.data.Result)) {
+          console.log(res.data.Result)
           storages = JSON.parse(storages)
           const requestStorages = []
           for (let i = 0; i < res.data.Result.length; i++) {
             let storageLocal = JSON.stringify(storages[i])
             let storageResult = JSON.stringify(res.data.Result[i])
             if (storageLocal !== storageResult) {
-                requestStorages.push(res.data.Result['Id'])
+                requestStorages.push(res.data.Result[i]['Id'])
             }
           }
+          console.log(requestStorages)
            for (let i = 0; i < requestStorages.length; i++) {
              this.getContactsInfo(requestStorages[i])
            }
