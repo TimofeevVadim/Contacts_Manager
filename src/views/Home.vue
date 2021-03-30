@@ -93,12 +93,53 @@ export default {
     update() {
       const token = localStorage.getItem('token')
       this.host = localStorage.getItem('host')
+     /*
+     Вариант для полной синхронизации, происходит всё то же, что и при первом входе
+
       localStorage.clear()
       localStorage.setItem('token', token)
       localStorage.setItem('host', this.host)
       this.contactStorages = []
       this.users = {}
-      this.getContacts()
+      this.getContacts()*/
+
+
+      /*
+      Второй вариант:
+      * Если CTag изменяется при любом изменении списка контактов, то нахожу изменённые стораджи,
+      * нахожу измененные контакты и перезаписываю их
+      */
+      let storages = localStorage.getItem('contactStorages')
+      let bodyFormData = new FormData();
+      bodyFormData.append('Module', 'Contacts');
+      bodyFormData.append('Method', 'GetContactStorages');
+      axios({
+        url: this.host,
+        method: 'POST',
+        async: true,
+        dataType: 'json',
+        data: bodyFormData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Authorization": "Bearer " + token
+        }
+      })
+      .then( res => {
+        if (storages !== JSON.stringify(res.data.Result)) {
+          storages = JSON.parse(storages)
+          const requestStorages = []
+          for (let i = 0; i < res.data.Result.length; i++) {
+            let storageLocal = JSON.stringify(storages[i])
+            let storageResult = JSON.stringify(res.data.Result[i])
+            if (storageLocal !== storageResult) {
+                requestStorages.push(res.data.Result['Id'])
+            }
+          }
+           for (let i = 0; i < requestStorages.length; i++) {
+             this.getContactsInfo(requestStorages[i])
+           }
+        }
+      })
     },
     getContacts() {
       let bodyFormData = new FormData();
