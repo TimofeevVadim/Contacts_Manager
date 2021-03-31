@@ -20,7 +20,7 @@
     <div class="frame d_flex">
       <div class="category frame-border">
         <div class="category__row" v-for="storage in contactStorages" :key="storage.id"
-             @click="getContactsInfo(storage.Id)">
+             @click="getUsers(storage.Id)">
           <h2 class="category__row-h2">{{ storage.Id }}</h2>
         </div>
       </div>
@@ -181,6 +181,10 @@ export default {
                 }
               }
           )
+    },
+    getUsers(storage) {
+      const storageArr = localStorage.getItem(`${storage}Arr`)
+      this.users = JSON.parse(storageArr)
     },
      getContactsInfo(storage) {
       const storageArr = localStorage.getItem(`${storage}Arr`)
