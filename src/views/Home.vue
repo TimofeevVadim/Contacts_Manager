@@ -217,27 +217,18 @@ export default {
                 const requestUuids = []
                 const contactsInfo = res.data.Result.Info
                 const uuids = JSON.parse(localStorage.getItem('uuids'))
-                if (localStorage.getItem(storage) !== String(res.data.Result.CTag) || !storageArr) {
-                  let uuid = ''
-                  for (let i = 0; i < contactsInfo.length; i++) {
-                    uuid = contactsInfo[i].UUID
+
+                localStorage.setItem(storage, res.data.Result.CTag)
+                let uuid = ''
+                for (let i = 0; i < contactsInfo.length; i++) {
+                  uuid = contactsInfo[i].UUID
+                  if (uuids[storage][uuid] !== contactsInfo[i].ETag) {
                     requestUuids.push(`"${uuid}"`)
                     uuids[storage][uuid] = contactsInfo[i].ETag
                   }
-                  localStorage.setItem(storage, res.data.Result.CTag)
-                } else {
-                  localStorage.setItem(storage, res.data.Result.CTag)
-                  let uuid = ''
-                  for (let i = 0; i < contactsInfo.length; i++) {
-                    uuid = contactsInfo[i].UUID
-                    if (uuids[storage][uuid] !== contactsInfo[i].ETag) {
-                      requestUuids.push(`"${uuid}"`)
-                      uuids[storage][uuid] = contactsInfo[i].ETag
-                    }
-                  }
                 }
+
                 localStorage.setItem('uuids', JSON.stringify(uuids))
-            console.log(requestUuids)
                 if (requestUuids.length > 0) {
                   this.GetContactsByUids(token, requestUuids, storage)
                 }
@@ -245,7 +236,6 @@ export default {
           )
     },
     GetContactsByUids(token, uuids, currentStorage) {
-      console.log(uuids, 'uuids')
       let bodyFormData = new FormData();
       bodyFormData.append('Module', 'Contacts');
       bodyFormData.append('Method', 'GetContactsByUids');
